@@ -1,11 +1,9 @@
 import glob
 import itertools
 import json
-import sys
 
 from bs4 import BeautifulSoup
 from parsimonious.grammar import Grammar
-from parsimonious.nodes import NodeVisitor
 
 
 SHOWINGS_GRAMMAR = Grammar(
