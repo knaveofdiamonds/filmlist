@@ -1,5 +1,6 @@
 import glob
 import itertools
+import json
 import sys
 
 from bs4 import BeautifulSoup
@@ -150,4 +151,4 @@ if __name__ == '__main__':
             html = BeautifulSoup(fh.read(), 'lxml')
 
         for s in iterate_over_showings(html):
-            print(s)
+            print(json.dumps(s))
