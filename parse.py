@@ -124,6 +124,12 @@ def parse_showings(time_str):
     return result
 
 
+def clean_title(raw_title):
+    raw_title.replace(' + Q&A', '').replace(' (Subtitled)', ''),replace(
+        ' (Parent and Baby Screening)', ''
+    )
+
+
 def iterate_over_showings(html):
     cinema = extract_cinema(html)
     showings = extract_raw_showings(html)
