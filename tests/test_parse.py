@@ -89,6 +89,19 @@ def test_parse_showings_day_range_qualified_time():
     ]
 
 
+def test_parse_showings_day_range_qualified_time_day_expression():
+    result = subject.parse_showings('Mon-Wed 15:30 (Tue/Wed) 20:45')
+
+    assert len(result) == 5
+    assert result == [
+        {'day': 'Mon', 'time': '20:45'},
+        {'day': 'Tue', 'time': '20:45'},
+        {'day': 'Tue', 'time': '15:30'},
+        {'day': 'Wed', 'time': '20:45'},
+        {'day': 'Wed', 'time': '15:30'},
+    ]
+
+
 def test_parse_showings_no_day_expression():
     assert subject.parse_showings('20:45') == [
         {'day': 'Mon', 'time': '20:45'},

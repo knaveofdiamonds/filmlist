@@ -14,13 +14,14 @@ day_expression = day_or_day_range ("/" day_or_day_range)*
 day_or_day_range = day ("-" day)?
 day  = ~"Mon|Tue|Wed|Thu|Fri|Sat|Sun"
 time_expression = time (whitespace time_qualifier)?
-time_qualifier = "(" day ")"
+time_qualifier = "(" day_expression ")"
 time = ~"[0-2]?[0-9]:[0-5][0-9]"
 whitespace = ~"\s+"
 """
 )
 
 DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
 
 def extract_cinema(html):
     return html.title.text.replace(
@@ -57,8 +58,10 @@ def parse_showings(time_str):
     # context variables
     times = []
     days = []
-    time_qualifier = None
+
+    time_qualifier = []
     in_showing = False
+    in_time_qualifier = False
 
     while len(node_stack) != 0:
         n = node_stack.pop()
@@ -66,16 +69,30 @@ def parse_showings(time_str):
         if n.expr_name == 'time':
             if time_qualifier:
                 times.append((n.text, time_qualifier))
-                time_qualifier = None
+                time_qualifier = []
             else:
-                times.append((n.text, None))
+                times.append((n.text, []))
         elif n.expr_name == 'time_qualifier':
-            time_qualifier = n.children[1].text
+            if in_time_qualifier:
+                in_time_qualifier = False
+            else:
+                in_time_qualifier = True
+
+                node_stack.append(n)
+
+                for child in n:
+                    node_stack.append(child)
+
         elif n.expr_name == 'day_or_day_range':
             if '-' in n.text:
-                days += expand_day_range(*(n.text.split('-')))
+                day_values = expand_day_range(*(n.text.split('-')))
             else:
-                days.append(n.text)
+                day_values = [n.text]
+
+            if in_time_qualifier:
+                time_qualifier += day_values
+            else:
+                days += day_values
         elif n.expr_name == 'showing':
             if in_showing:
                 in_showing = False
@@ -86,7 +103,7 @@ def parse_showings(time_str):
                 result += [
                     {'day': day, 'time': time[0]}
                     for (day, time) in itertools.product(days, times)
-                    if time[1] is None or time[1] == day
+                    if not time[1] or day in time[1]
                 ]
             else:
                 times = []
