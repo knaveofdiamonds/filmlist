@@ -1,3 +1,4 @@
+import glob
 import itertools
 import sys
 
@@ -123,14 +124,24 @@ def parse_showings(time_str):
     return result
 
 
-if __name__ == '__main__':
-    html = BeautifulSoup(sys.stdin.read(), 'lxml')
+def iterate_over_showings(html):
+    cinema = extract_cinema(html)
     showings = extract_raw_showings(html)
 
     for s in showings:
         times = parse_showings(s['times'])
 
-        print(f"## {s['title']} ##")
-
         for t in times:
-            print(t)
+            t['title'] = s['title'].replace(' + Q&A', '')
+            t['cinema'] = cinema
+            yield t
+
+
+if __name__ == '__main__':
+
+    for path in glob.glob('downloads/*.html'):
+        with open(path, 'r') as fh:
+            html = BeautifulSoup(fh.read(), 'lxml')
+
+        for s in iterate_over_showings(html):
+            print(s)
