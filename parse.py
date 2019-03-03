@@ -9,7 +9,7 @@ from parsimonious.nodes import NodeVisitor
 SHOWINGS_GRAMMAR = Grammar(
 """
 showings = showing (";" whitespace showing)*
-showing  = day_expression (whitespace time_expression)+
+showing  = day_expression? (whitespace? time_expression)+
 day_expression = day_or_day_range ("/" day_or_day_range)*
 day_or_day_range = day ("-" day)?
 day  = ~"Mon|Tue|Wed|Thu|Fri|Sat|Sun"
@@ -79,6 +79,10 @@ def parse_showings(time_str):
         elif n.expr_name == 'showing':
             if in_showing:
                 in_showing = False
+
+                if not days:
+                    days = DAYS
+
                 result += [
                     {'day': day, 'time': time[0]}
                     for (day, time) in itertools.product(days, times)
